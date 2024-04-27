@@ -16,9 +16,10 @@ jobs:
     - uses: actions/checkout@v4
     - run: go mod tidy && git diff --exit-code go.mod go.sum
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         version: [ 'oldstable', 'stable' ]
     name: Go ${{ matrix.version }}
     steps:
