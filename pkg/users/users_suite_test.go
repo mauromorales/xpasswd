@@ -1,4 +1,4 @@
-package xpasswd_test
+package users_test
 
 import (
 	"testing"
