@@ -21,3 +21,5 @@
 go.work
 
 .go-version
+
+dist/
