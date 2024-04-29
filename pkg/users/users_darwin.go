@@ -50,6 +50,14 @@ type DarwinUserList struct {
 	CommonUserList
 }
 
+func (l *DarwinUserList) SetPath(path string) {
+}
+
+func (l DarwinUserList) Load() error {
+	_, err := l.GetAll()
+	return err
+}
+
 // GetAll returns a list of users on a Darwin system
 func (l DarwinUserList) GetAll() ([]User, error) {
 	users := make([]User, 0)
