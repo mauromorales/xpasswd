@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -16,12 +17,12 @@ type DarwinUser struct {
 	userShell        string
 }
 
-func (u DarwinUser) UID() string {
-	return u.uniqueID
+func (u DarwinUser) UID() (int, error) {
+	return strconv.Atoi(u.uniqueID)
 }
 
-func (u DarwinUser) GID() string {
-	return u.primaryGroupID
+func (u DarwinUser) GID() (int, error) {
+	return strconv.Atoi(u.primaryGroupID)
 }
 
 func (u DarwinUser) Username() string {
@@ -40,9 +41,18 @@ func (u DarwinUser) RealName() string {
 	return u.realName
 }
 
-// List returns a list of users on a Darwin system
-func List() ([]DarwinUser, error) {
-	users := make([]DarwinUser, 0)
+func NewUserList() UserList {
+	return &DarwinUserList{}
+}
+
+// DarwinUserList is a list of Linux users
+type DarwinUserList struct {
+	CommonUserList
+}
+
+// GetAll returns a list of users on a Darwin system
+func (l DarwinUserList) GetAll() ([]User, error) {
+	users := make([]User, 0)
 
 	output, err := execDSCL("-readall", "/Users", "UniqueID", "PrimaryGroupID", "RealName", "UserShell", "NFSHomeDirectory", "RecordName")
 	if err != nil {
@@ -54,7 +64,16 @@ func List() ([]DarwinUser, error) {
 	for _, record := range records {
 		user := parseRecord(record)
 		users = append(users, user)
+		uid, err := user.UID()
+		if err != nil {
+			return users, fmt.Errorf("failed to convert UID to int: %w", err)
+		}
+		if uid > l.lastUID {
+			l.lastUID = uid
+		}
 	}
+
+	l.users = users
 
 	return users, nil
 }
