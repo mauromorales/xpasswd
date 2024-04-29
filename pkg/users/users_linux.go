@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -17,12 +18,22 @@ type LinuxUser struct {
 	interpreter   string
 }
 
-func (u LinuxUser) UID() string {
-	return u.uid
+func NewUserList() UserList {
+	return &LinuxUserList{path: "/etc/passwd"}
 }
 
-func (u LinuxUser) GID() string {
-	return u.gid
+// LinuxUserList is a list of Linux users
+type LinuxUserList struct {
+	CommonUserList
+	path string
+}
+
+func (u LinuxUser) UID() (int, error) {
+	return strconv.Atoi(u.uid)
+}
+
+func (u LinuxUser) GID() (int, error) {
+	return strconv.Atoi(u.gid)
 }
 
 func (u LinuxUser) Username() string {
@@ -41,13 +52,21 @@ func (u LinuxUser) RealName() string {
 	return u.nameOrComment
 }
 
-// List returns a list of users on a Linux system
-func List() ([]User, error) {
+func (l *LinuxUserList) SetPath(path string) {
+	l.path = path
+}
+
+func (l *LinuxUserList) Load() error {
+	_, err := l.GetAll()
+	return err
+}
+
+// GetAll returns all users in the list
+func (l *LinuxUserList) GetAll() ([]User, error) {
 	users := make([]User, 0)
 
-	file, err := os.Open("/etc/passwd")
+	file, err := os.Open(l.path)
 	if err != nil {
-		fmt.Println("Error opening the file:", err)
 		return users, err
 	}
 	defer file.Close()
@@ -77,12 +96,23 @@ func List() ([]User, error) {
 			interpreter:   parts[6],
 		}
 		users = append(users, user)
+
+		uid, err := user.UID()
+		if err != nil {
+			return users, fmt.Errorf("failed to convert UID to int: %w", err)
+		}
+
+		if uid > l.lastUID {
+			l.lastUID = uid
+		}
 	}
 
 	// Check if there were errors during scanning
 	if err := scanner.Err(); err != nil {
 		return users, fmt.Errorf("error reading the file: %w", err)
 	}
+
+	l.users = users
 
 	return users, nil
 }

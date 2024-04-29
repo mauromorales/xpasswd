@@ -18,8 +18,8 @@ var _ = Describe("ListDarwing", func() {
 		UserShell: /bin/sh`
 
 		got := parseRecord(rootRecord)
-		Expect(got.UID()).To(Equal("0"))
-		Expect(got.GID()).To(Equal("0"))
+		Expect(got.UID()).To(Equal(0))
+		Expect(got.GID()).To(Equal(0))
 		Expect(got.HomeDir()).To(Equal("/var/root"))
 		Expect(got.Shell()).To(Equal("/bin/sh"))
 		Expect(got.Username()).To(Equal("root"))
