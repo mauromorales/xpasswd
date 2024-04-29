@@ -13,13 +13,14 @@ import (
 
 func main() {
 	// print all the users in the system
-	users, err := users.List()
+	list := users.NewUserList()
+	users, err := list.GetAll()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for _, user := range users {
-		fmt.Println(user)
+		fmt.Println(user.Username())
 	}
 
 }
