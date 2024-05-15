@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
+// DarwinUser matches the fields in ds
 type DarwinUser struct {
 	recordName       string
+	password         string
 	uniqueID         string
 	primaryGroupID   string
 	realName         string
@@ -27,6 +29,10 @@ func (u DarwinUser) GID() (int, error) {
 
 func (u DarwinUser) Username() string {
 	return u.recordName
+}
+
+func (u DarwinUser) Password() string {
+	return u.password
 }
 
 func (u DarwinUser) HomeDir() string {
@@ -62,7 +68,7 @@ func (l DarwinUserList) Load() error {
 func (l DarwinUserList) GetAll() ([]User, error) {
 	users := make([]User, 0)
 
-	output, err := execDSCL("-readall", "/Users", "UniqueID", "PrimaryGroupID", "RealName", "UserShell", "NFSHomeDirectory", "RecordName")
+	output, err := execDSCL("-readall", "/Users", "UniqueID", "PrimaryGroupID", "RealName", "UserShell", "NFSHomeDirectory", "RecordName", "Password")
 	if err != nil {
 		return users, fmt.Errorf("failed to execute command: %w", err)
 	}
@@ -107,6 +113,8 @@ func parseRecord(record string) DarwinUser {
 		switch key {
 		case "RecordName":
 			user.recordName = val
+		case "Password":
+			user.password = val
 		case "UniqueID":
 			user.uniqueID = val
 		case "PrimaryGroupID":

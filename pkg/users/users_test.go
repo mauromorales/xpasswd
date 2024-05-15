@@ -8,8 +8,9 @@ import (
 var _ = Describe("users", func() {
 	Describe("Get", func() {
 		var list CommonUserList
-		user := CommonUser{uid: "0", gid: "0", username: "root", homeDir: "/root", shell: "/bin/bash", realName: "root"}
-		users := []User{user}
+		rootUser := CommonUser{uid: "0", gid: "0", username: "root", homeDir: "/root", shell: "/bin/bash", realName: "root"}
+		barbazUser := CommonUser{uid: "1000", gid: "1000", username: "barbaz", homeDir: "/home/barbaz", shell: "/bin/bash", realName: "Bar Baz"}
+		users := []User{rootUser, barbazUser}
 
 		Context("when the user is not present in the list", func() {
 			JustBeforeEach(func() {
@@ -29,7 +30,7 @@ var _ = Describe("users", func() {
 
 			It("returns the user", func() {
 				got := list.Get("root")
-				Expect(got).To(Equal(user))
+				Expect(got).To(Equal(rootUser))
 			})
 		})
 	})
@@ -37,7 +38,8 @@ var _ = Describe("users", func() {
 	Describe("GenerateUID", func() {
 		var list CommonUserList
 		user := CommonUser{uid: "0", gid: "0", username: "root", homeDir: "/root", shell: "/bin/bash", realName: "root"}
-		users := []User{user}
+		foobar := CommonUser{uid: "1000", gid: "1000", username: "foobar", homeDir: "/home/foobar", shell: "/bin/bash", realName: "foo bar"}
+		users := []User{user, foobar}
 
 		Context("when the list is empty", func() {
 			JustBeforeEach(func() {
@@ -52,12 +54,12 @@ var _ = Describe("users", func() {
 
 		Context("when the list is not empty", func() {
 			JustBeforeEach(func() {
-				list = CommonUserList{users: users}
+				list = CommonUserList{users: users, lastUID: 1000}
 			})
 
 			It("returns the next available UID", func() {
 				got := list.GenerateUID()
-				Expect(got).To(Equal(1))
+				Expect(got).To(Equal(1001))
 			})
 		})
 	})

@@ -8,14 +8,15 @@ import (
 	"strings"
 )
 
+// LinuxUser matches the fields in /etc/passwd. See man 5 passwd for more information
 type LinuxUser struct {
-	login         string
-	uid           string
-	gid           string
-	nameOrComment string
-	home          string
-	shell         string
-	interpreter   string
+	login                  string
+	password               string
+	uid                    string
+	gid                    string
+	userNameOrComment      string
+	userHomeDir            string
+	usercommandInterpreter string
 }
 
 func NewUserList() UserList {
@@ -40,16 +41,20 @@ func (u LinuxUser) Username() string {
 	return u.login
 }
 
+func (u LinuxUser) Password() string {
+	return u.password
+}
+
 func (u LinuxUser) HomeDir() string {
-	return u.home
+	return u.userHomeDir
 }
 
 func (u LinuxUser) Shell() string {
-	return u.shell
+	return u.usercommandInterpreter
 }
 
 func (u LinuxUser) RealName() string {
-	return u.nameOrComment
+	return u.userNameOrComment
 }
 
 func (l *LinuxUserList) SetPath(path string) {
@@ -78,23 +83,8 @@ func (l *LinuxUserList) GetAll() ([]User, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// Split the line into parts using ':' as the delimiter
-		parts := strings.Split(line, ":")
+		user, err := parseRecord(line)
 
-		// Check if the line is correctly formatted with 7 fields
-		if len(parts) != 7 {
-			return users, fmt.Errorf("unexpected format: %s", line)
-		}
-
-		user := LinuxUser{
-			login:         parts[0],
-			uid:           parts[2],
-			gid:           parts[3],
-			nameOrComment: parts[4],
-			home:          parts[5],
-			shell:         parts[6],
-			interpreter:   parts[6],
-		}
 		users = append(users, user)
 
 		uid, err := user.UID()
@@ -115,4 +105,23 @@ func (l *LinuxUserList) GetAll() ([]User, error) {
 	l.users = users
 
 	return users, nil
+}
+
+func parseRecord(record string) (LinuxUser, error) {
+	user := LinuxUser{}
+	fields := strings.Split(record, ":")
+	// Check if the line is correctly formatted with 7 fields
+	if len(fields) != 7 {
+		return user, fmt.Errorf("unexpected format: %s", record)
+	}
+
+	user.login = fields[0]
+	user.password = fields[1]
+	user.uid = fields[2]
+	user.gid = fields[3]
+	user.userNameOrComment = fields[4]
+	user.userHomeDir = fields[5]
+	user.usercommandInterpreter = fields[6]
+
+	return user, nil
 }
