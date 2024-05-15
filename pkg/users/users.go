@@ -13,6 +13,8 @@ type User interface {
 	GID() (int, error)
 	// Username returns the user's username
 	Username() string
+	// Password returns the user's password (this is usually not used but we include it for completeness)
+	Password() string
 	// HomeDir returns the user's home directory
 	HomeDir() string
 	// Shell returns the user's shell
@@ -25,6 +27,7 @@ type CommonUser struct {
 	uid      string
 	gid      string
 	username string
+	password string
 	homeDir  string
 	shell    string
 	realName string
@@ -40,6 +43,10 @@ func (u CommonUser) GID() (int, error) {
 
 func (u CommonUser) Username() string {
 	return u.username
+}
+
+func (u CommonUser) Password() string {
+	return u.password
 }
 
 func (u CommonUser) HomeDir() string {
