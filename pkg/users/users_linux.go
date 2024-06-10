@@ -83,16 +83,17 @@ func (l *LinuxUserList) GetAll() ([]User, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		user, err := parseRecord(line)
-
-		users = append(users, user)
-
-		uid, err := user.UID()
-		if err != nil {
-			return users, fmt.Errorf("failed to convert UID to int: %w", err)
+		user, lineErr := parseRecord(line)
+		if lineErr == nil {
+			users = append(users, user)
 		}
 
-		if uid > l.lastUID {
+		uid, lineErr := user.UID()
+		if lineErr != nil {
+			err = lineErr
+		}
+
+		if lineErr == nil && uid > l.lastUID {
 			l.lastUID = uid
 		}
 	}
@@ -104,7 +105,7 @@ func (l *LinuxUserList) GetAll() ([]User, error) {
 
 	l.users = users
 
-	return users, nil
+	return users, err
 }
 
 func parseRecord(record string) (LinuxUser, error) {

@@ -49,6 +49,31 @@ var _ = Describe("LinuxUserList", func() {
 		Expect(user).To(BeNil())
 		Expect(list.GenerateUID()).To(Equal(1001))
 	})
+
+	It("Returns users even when there might be errors reading", func() {
+		file, err := os.CreateTemp("", "passwd")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer os.Remove(file.Name())
+
+		_, err = file.WriteString("root:x:0:0:root:/root:/bin/bash\n")
+		Expect(err).ToNot(HaveOccurred())
+		_, err = file.WriteString("foo:x:1000::foo:/home/foo:/bin/bash\n")
+		Expect(err).ToNot(HaveOccurred())
+		_, err = file.WriteString("baz:x:1000:1000:foo:/home/foo:/bin/bash:asdf\n")
+		Expect(err).ToNot(HaveOccurred())
+
+		list := LinuxUserList{}
+		list.SetPath(file.Name())
+		users, err := list.GetAll()
+		Expect(err).To(HaveOccurred())
+		Expect(users).To(HaveLen(2))
+		foo := list.Get("foo")
+		uid, err := foo.GID()
+		Expect(uid).To(Equal(0))
+		Expect(err).To(HaveOccurred())
+	})
 })
 
 var _ = Describe("DarwinUser", func() {
