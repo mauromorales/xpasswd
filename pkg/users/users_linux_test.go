@@ -9,6 +9,60 @@ import (
 )
 
 var _ = Describe("LinuxUserList", func() {
+	Describe("GenerateUIDInRange", func() {
+		var file *os.File
+		var err error
+		var list LinuxUserList
+
+		BeforeEach(func() {
+			file, err = os.CreateTemp("", "passwd")
+			Expect(err).ToNot(HaveOccurred())
+			DeferCleanup(func() {
+				defer os.Remove(file.Name())
+			})
+
+			_, err = file.WriteString("root:x:0:0:root:/root:/bin/bash\n")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = file.WriteString("foo:x:1000:1000:foo:/home/foo:/bin/bash\n")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = file.WriteString("foo:x:1001:1000:foo:/home/foo:/bin/bash\n")
+			_, err = file.WriteString("foo:x:1001:1000:foo:/home/foo:/bin/bash\n")
+			Expect(err).ToNot(HaveOccurred())
+
+			list = LinuxUserList{}
+			list.SetPath(file.Name())
+			Expect(list.Load()).ToNot(HaveOccurred())
+		})
+
+		When("a uid is available in the range", func() {
+			var minimum, maximum int
+			BeforeEach(func() {
+				minimum = 1000
+				maximum = 2000
+			})
+
+			It("returns the minimum available uid", func() {
+				r, err := list.GenerateUIDInRange(minimum, maximum)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(r).To(Equal(1002))
+			})
+		})
+
+		When("there is no available uid", func() {
+			var minimum, maximum int
+			BeforeEach(func() {
+				minimum = 1000
+				maximum = 1001
+			})
+
+			It("returns an error", func() {
+				_, err := list.GenerateUIDInRange(minimum, maximum)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("no available uid in range"))
+			})
+		})
+	})
+
 	It("parses a record", func() {
 		rootRecord := `root:x:0:0:root:/root:/bin/bash`
 
