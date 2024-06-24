@@ -2,6 +2,8 @@
 package users
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -68,6 +70,7 @@ type UserList interface {
 	// GetAll returns all users in the list
 	GetAll() ([]User, error)
 	GenerateUID() int
+	GenerateUIDInRange(int, int) (int, error)
 	LastUID() int
 	SetPath(path string)
 	Load() error
@@ -98,4 +101,32 @@ func (list CommonUserList) GenerateUID() int {
 		return 0
 	}
 	return list.lastUID + 1
+}
+
+// Finds the lowest available uid in the specified range.
+// Returns an error if there is no available uid in that range.
+func (list CommonUserList) GenerateUIDInRange(minimum, maximum int) (int, error) {
+	userSet := make(map[int]struct{})
+	for _, user := range list.users {
+		uid, err := user.UID()
+		if err != nil {
+			return -1, fmt.Errorf("getting user's uid: %w", err)
+		}
+		userSet[uid] = struct{}{}
+	}
+
+	result := -1
+	for i := minimum; i <= maximum; i++ {
+		if _, found := userSet[i]; found {
+			continue // uid in use, skip it
+		}
+		result = i // found a free one, stop here
+		break
+	}
+
+	if result == -1 {
+		return result, errors.New("no available uid in range")
+	}
+
+	return result, nil
 }
