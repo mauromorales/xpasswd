@@ -1,6 +1,6 @@
 # xpasswd
 
-Like passwd but cross-platform
+Like [passwd](https://github.com/willdonnelly/passwd) but cross-platform and with a license.
 
 You can list all users in a system, which would be the equivalent of reading the /etc/passwd file on Linux.
 
@@ -44,3 +44,10 @@ type User interface {
 	RealName() string
 }
 ```
+
+## TODO
+
+- [x] Linux support
+- [x] MacOS support
+- [ ] BSD support 
+- [ ] Windows support (I don't have a windows machine atm)
