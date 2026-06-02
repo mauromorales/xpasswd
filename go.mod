@@ -2,7 +2,7 @@ module github.com/mauromorales/xpasswd
 
 go 1.25.0
 
-toolchain go1.26.3
+toolchain go1.26.4
 
 require (
 	github.com/onsi/ginkgo/v2 v2.28.3
