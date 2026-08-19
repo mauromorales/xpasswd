@@ -56,6 +56,8 @@ type DarwinUserList struct {
 	CommonUserList
 }
 
+// SetPath is a no-op on Darwin: users are always read live from the
+// system's directory service (see execDSCL), not from a file on disk.
 func (l *DarwinUserList) SetPath(path string) {
 }
 
