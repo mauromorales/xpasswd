@@ -62,3 +62,22 @@ var _ = Describe("DarwinUser", func() {
 		})
 	})
 })
+
+var _ = Describe("NewUserList", func() {
+	// Regression test for a bug where Load/GetAll were declared on a value
+	// receiver: state written inside them (list.users, list.lastUID) was
+	// silently discarded, so Get always returned nil. This goes through the
+	// same *UserList the real caller gets, unlike the tests above which
+	// construct a DarwinUserList by hand and never exercise Load/GetAll.
+	It("loads real users through the public constructor", func() {
+		list := NewUserList()
+		Expect(list.Load()).ToNot(HaveOccurred())
+
+		root := list.Get("root")
+		Expect(root).ToNot(BeNil())
+
+		uid, err := root.UID()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(uid).To(Equal(0))
+	})
+})
