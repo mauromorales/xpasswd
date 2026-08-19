@@ -130,6 +130,36 @@ var _ = Describe("LinuxUserList", func() {
 	})
 })
 
+var _ = Describe("NewUserList", func() {
+	// Regression coverage for the constructor path: every other test in
+	// this file builds a LinuxUserList by hand instead of going through
+	// NewUserList(), so a bug reachable only via the interface returned to
+	// real callers (as happened on the Darwin implementation) would not
+	// have been caught here.
+	It("loads users through the public constructor", func() {
+		file, err := os.CreateTemp("", "passwd")
+		Expect(err).ToNot(HaveOccurred())
+		defer os.Remove(file.Name())
+
+		_, err = file.WriteString("root:x:0:0:root:/root:/bin/bash\n")
+		Expect(err).ToNot(HaveOccurred())
+		_, err = file.WriteString("foo:x:1000:1000:foo:/home/foo:/bin/bash\n")
+		Expect(err).ToNot(HaveOccurred())
+
+		list := NewUserList()
+		list.SetPath(file.Name())
+		Expect(list.Load()).ToNot(HaveOccurred())
+
+		root := list.Get("root")
+		Expect(root).ToNot(BeNil())
+		uid, err := root.UID()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(uid).To(Equal(0))
+
+		Expect(list.LastUID()).To(Equal(1000))
+	})
+})
+
 var _ = Describe("DarwinUser", func() {
 	Describe("Get", func() {
 		var list LinuxUserList
