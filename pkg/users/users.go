@@ -67,7 +67,12 @@ func (u CommonUser) RealName() string {
 type UserList interface {
 	// Get returns a user from the list by username
 	Get(username string) User
-	// GetAll returns all users in the list
+	// GetAll returns every user it could successfully parse, together with
+	// a joined error (see errors.Join) describing every line it could not.
+	// The returned slice can be non-empty even when the error is non-nil:
+	// callers that want to treat any malformed line as fatal should check
+	// the error, and callers that want best-effort results should use the
+	// slice and log or ignore the error.
 	GetAll() ([]User, error)
 	GenerateUID() int
 	GenerateUIDInRange(int, int) (int, error)
