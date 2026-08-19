@@ -2,6 +2,7 @@ package users
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -84,16 +85,19 @@ func (l *LinuxUserList) GetAll() ([]User, error) {
 		line := scanner.Text()
 
 		user, lineErr := parseRecord(line)
-		if lineErr == nil {
-			users = append(users, user)
-		}
-
-		uid, lineErr := user.UID()
 		if lineErr != nil {
-			err = lineErr
+			err = errors.Join(err, lineErr)
+			continue
+		}
+		users = append(users, user)
+
+		uid, uidErr := user.UID()
+		if uidErr != nil {
+			err = errors.Join(err, uidErr)
+			continue
 		}
 
-		if lineErr == nil && uid > l.lastUID {
+		if uid > l.lastUID {
 			l.lastUID = uid
 		}
 	}
