@@ -69,6 +69,7 @@ type UserList interface {
 	Get(username string) User
 	// GetAll returns all users in the list
 	GetAll() ([]User, error)
+	// GenerateUID returns lastUID + 1, or -1 if the list is empty.
 	GenerateUID() int
 	GenerateUIDInRange(int, int) (int, error)
 	LastUID() int
@@ -96,9 +97,11 @@ func (list CommonUserList) LastUID() int {
 	return list.lastUID
 }
 
+// GenerateUID returns lastUID + 1, or -1 if the list is empty (or hasn't
+// been loaded). -1 is never a valid UID, unlike 0, which is root's.
 func (list CommonUserList) GenerateUID() int {
 	if len(list.users) == 0 {
-		return 0
+		return -1
 	}
 	return list.lastUID + 1
 }

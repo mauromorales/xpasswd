@@ -46,9 +46,9 @@ var _ = Describe("users", func() {
 				list = CommonUserList{}
 			})
 
-			It("returns 0", func() {
+			It("returns -1, since 0 is root's UID and would be a valid-looking answer", func() {
 				got := list.GenerateUID()
-				Expect(got).To(Equal(0))
+				Expect(got).To(Equal(-1))
 			})
 		})
 
