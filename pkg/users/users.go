@@ -4,7 +4,6 @@ package users
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 // User is an interface that represents a user on a system
@@ -23,44 +22,6 @@ type User interface {
 	Shell() string
 	// RealName returns the user's real name
 	RealName() string
-}
-
-type CommonUser struct {
-	uid      string
-	gid      string
-	username string
-	password string
-	homeDir  string
-	shell    string
-	realName string
-}
-
-func (u CommonUser) UID() (int, error) {
-	return strconv.Atoi(u.uid)
-}
-
-func (u CommonUser) GID() (int, error) {
-	return strconv.Atoi(u.gid)
-}
-
-func (u CommonUser) Username() string {
-	return u.username
-}
-
-func (u CommonUser) Password() string {
-	return u.password
-}
-
-func (u CommonUser) HomeDir() string {
-	return u.homeDir
-}
-
-func (u CommonUser) Shell() string {
-	return u.shell
-}
-
-func (u CommonUser) RealName() string {
-	return u.realName
 }
 
 // UserList is an interface that represents a list of users
