@@ -72,6 +72,10 @@ type UserList interface {
 	GenerateUID() int
 	GenerateUIDInRange(int, int) (int, error)
 	LastUID() int
+	// SetPath points the list at a specific file to read instead of the
+	// platform default. Only meaningful where the implementation reads
+	// from a file at all: the Darwin implementation reads live from the
+	// system's directory service instead, so its SetPath is a no-op.
 	SetPath(path string)
 	Load() error
 }
