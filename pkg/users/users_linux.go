@@ -70,6 +70,7 @@ func (l *LinuxUserList) Load() error {
 // GetAll returns all users in the list
 func (l *LinuxUserList) GetAll() ([]User, error) {
 	users := make([]User, 0)
+	l.lastUID = 0
 
 	file, err := os.Open(l.path)
 	if err != nil {
